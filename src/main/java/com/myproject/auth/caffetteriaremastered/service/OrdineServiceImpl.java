@@ -3,9 +3,6 @@ package com.myproject.auth.caffetteriaremastered.service;
 import com.myproject.auth.caffetteriaremastered.dto.*;
 import com.myproject.auth.caffetteriaremastered.model.*;
 import com.myproject.auth.caffetteriaremastered.repository.*;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,9 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -246,12 +240,10 @@ public class OrdineServiceImpl implements OrdineService{
     public List<ProdottoPercentualeVendite> calcolaPercentualeProdottiPiuVenduti(Long idOrdine) {
         List<Prodotti_Ordini> prodottiOrdini = prodottoOrdiniRepository.findByOrdineId(idOrdine);
 
-        // Calcola la quantità totale venduta
         int quantitaTotaleVenduta = prodottiOrdini.stream()
                 .mapToInt(Prodotti_Ordini::getQuantitaOrdine)
                 .sum();
 
-        // Calcola la percentuale di vendite per ciascun prodotto
         List<ProdottoPercentualeVendite> prodottiPercentuali = prodottiOrdini.stream()
                 .collect(Collectors.groupingBy(Prodotti_Ordini::getProdotto, Collectors.summingDouble(p -> (double) p.getQuantitaOrdine())))
                 .entrySet().stream()
@@ -261,7 +253,6 @@ public class OrdineServiceImpl implements OrdineService{
                 })
                 .collect(Collectors.toList());
 
-        // Ordina la lista per percentuale di vendite decrescente
         prodottiPercentuali.sort(Comparator.comparingDouble(ProdottoPercentualeVendite::getPercentualeVendite).reversed());
 
         return prodottiPercentuali;

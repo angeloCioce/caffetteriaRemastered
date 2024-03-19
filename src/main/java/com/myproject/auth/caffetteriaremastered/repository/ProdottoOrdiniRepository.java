@@ -2,13 +2,11 @@ package com.myproject.auth.caffetteriaremastered.repository;
 
 import com.myproject.auth.caffetteriaremastered.model.Ordine;
 import com.myproject.auth.caffetteriaremastered.model.Prodotti_Ordini;
-import com.myproject.auth.caffetteriaremastered.model.Prodotto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 

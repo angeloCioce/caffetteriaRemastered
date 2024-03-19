@@ -5,12 +5,10 @@ import com.myproject.auth.caffetteriaremastered.dto.ProdottoDto;
 import com.myproject.auth.caffetteriaremastered.dto.ProdottoDtoWIthCategorie;
 import com.myproject.auth.caffetteriaremastered.model.Categoria;
 import com.myproject.auth.caffetteriaremastered.model.CategoriaProdotti;
-import com.myproject.auth.caffetteriaremastered.model.Cliente;
 import com.myproject.auth.caffetteriaremastered.model.Prodotto;
 import com.myproject.auth.caffetteriaremastered.repository.CategoriaProdottoRepository;
 import com.myproject.auth.caffetteriaremastered.repository.CategoriaRepository;
 import com.myproject.auth.caffetteriaremastered.repository.ProdottoRepository;
-import com.myproject.auth.caffetteriaremastered.userRole.UtenteGenere;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -22,8 +20,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 

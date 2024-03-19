@@ -1,6 +1,5 @@
 package com.myproject.auth.caffetteriaremastered.service;
 
-import com.myproject.auth.caffetteriaremastered.dto.TokenBlacklistDto;
 import com.myproject.auth.caffetteriaremastered.model.TokenBlacklistEntity;
 import com.myproject.auth.caffetteriaremastered.repository.TokenBlacklistRepository;
 import org.springframework.beans.factory.annotation.Autowired;
