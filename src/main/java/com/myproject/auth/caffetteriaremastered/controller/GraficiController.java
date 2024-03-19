@@ -1,9 +1,6 @@
 package com.myproject.auth.caffetteriaremastered.controller;
 
-import com.myproject.auth.caffetteriaremastered.dto.ClientePercentualeOrdini;
-import com.myproject.auth.caffetteriaremastered.dto.CostiSpeseGrafico;
-import com.myproject.auth.caffetteriaremastered.dto.GuadagnoPerditaTotale;
-import com.myproject.auth.caffetteriaremastered.dto.ProdottoPercentualeVendite;
+import com.myproject.auth.caffetteriaremastered.dto.*;
 import com.myproject.auth.caffetteriaremastered.service.OrdineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +13,6 @@ public class GraficiController {
 
     @Autowired
     private OrdineService ordineService;
-
-
-
 
     @GetMapping("/percentualeProdottiPiuVenduti/{idOrdine}")
     public ResponseEntity<List<ProdottoPercentualeVendite>> percentualeProdottiPiuVenduti(@PathVariable Long idOrdine) {
@@ -48,5 +42,11 @@ public class GraficiController {
     public ResponseEntity<GuadagnoPerditaTotale> guadagnoPerditaTotale() {
         GuadagnoPerditaTotale datiGuadagnoPerdita = ordineService.calcolaGuadagnoPerditaTotale();
         return ResponseEntity.ok(datiGuadagnoPerdita);
+    }
+
+    @GetMapping("/utentiPercentualeOrdini")
+    public ResponseEntity<List<UtentePercentualeVendite>> getUtentiPercentualeOrdini() {
+        List<UtentePercentualeVendite> utentiPercentualeOrdini = ordineService.getUtentiPercentualeVendite();
+        return ResponseEntity.ok(utentiPercentualeOrdini);
     }
 }

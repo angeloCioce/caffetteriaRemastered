@@ -24,7 +24,9 @@ public interface OrdineService {
 
     List<CostiSpeseGrafico> calcolaCostiSpeseGrafico();
 
-    public List<ClientePercentualeOrdini> getClientiPercentualeAcquistoAnno(int anno);
+    List<ClientePercentualeOrdini> getClientiPercentualeAcquistoAnno(int anno);
 
-    public GuadagnoPerditaTotale calcolaGuadagnoPerditaTotale();
+    GuadagnoPerditaTotale calcolaGuadagnoPerditaTotale();
+
+    List<UtentePercentualeVendite> getUtentiPercentualeVendite();
 }

@@ -15,4 +15,6 @@ public interface OrdineRepository extends JpaRepository<Ordine, Long> {
     Page<Ordine> findAll(Specification<Ordine> spec, Pageable pageable);
     @Query("SELECT o FROM Ordine o WHERE YEAR(o.dataOrdine) = :anno")
     List<Ordine> findByDataOrdineYear(@Param("anno") int anno);
+    @Query("SELECT COUNT(o) FROM Ordine o WHERE o.utente.id_utente = :userId")
+    int countByUserId(Long userId);
 }

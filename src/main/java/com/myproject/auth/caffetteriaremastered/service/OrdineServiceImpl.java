@@ -359,4 +359,29 @@ public class OrdineServiceImpl implements OrdineService{
         return new GuadagnoPerditaTotale(guadagnoTotale, perditaTotale);
     }
 
+    public List<UtentePercentualeVendite> getUtentiPercentualeVendite() {
+        List<Utente> utenti = utenteRepository.findAll();
+        List<UtentePercentualeVendite> utentiPercentualeVendite = new ArrayList<>();
+
+        Map<Long, Integer> conteggioOrdiniPerUtente = new HashMap<>();
+
+        for (Utente utente : utenti) {
+            Long userId = utente.getId_utente();
+            int numeroOrdiniPerUtente = ordineRepository.countByUserId(userId);
+            conteggioOrdiniPerUtente.put(userId, numeroOrdiniPerUtente);
+        }
+
+        int totaleOrdini = conteggioOrdiniPerUtente.values().stream().mapToInt(Integer::intValue).sum();
+
+        for (Utente utente : utenti) {
+            Long userId = utente.getId_utente();
+            int numeroOrdiniPerUtente = conteggioOrdiniPerUtente.getOrDefault(userId, 0);
+            double percentualeVendite = (numeroOrdiniPerUtente * 100.0) / totaleOrdini;
+            utentiPercentualeVendite.add(new UtentePercentualeVendite(userId, percentualeVendite));
+        }
+
+        return utentiPercentualeVendite;
+    }
+
+
 }
