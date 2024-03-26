@@ -161,7 +161,7 @@ public class ClienteServiceImpl implements ClienteService{
             String initial = (String) filters.get("initial");
             spec = spec.and((root, query, cb) -> {
                 Expression<String> nomeExpression = root.get("nome");
-                return cb.like(nomeExpression, initial + "%");
+                return cb.like(nomeExpression, "%" + initial + "%");
             });
         }
 

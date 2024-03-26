@@ -19,7 +19,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     @Query("SELECT c FROM Cliente c WHERE YEAR(c.nascita) = :year")
     Page<Cliente> findByAnno(@Param("year") int year, Pageable pageable);
 
-    @Query("SELECT c FROM Cliente c WHERE c.nome LIKE :initial%")
+    @Query("SELECT c FROM Cliente c WHERE c.nome LIKE %:initial%")
     Page<Cliente> findByInitial(@Param("initial") String initial, Pageable pageable);
 
     @Query("SELECT c FROM Cliente c WHERE c.email LIKE %:emailDomain%")

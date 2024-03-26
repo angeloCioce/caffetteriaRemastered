@@ -1,12 +1,14 @@
 package com.myproject.auth.caffetteriaremastered.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,11 +18,11 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "prodotto")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Prodotto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-
     @Column(name = "id_prodotto")
     private Long id_prodotto;
 
@@ -36,7 +38,7 @@ public class Prodotto {
 
     private Integer quantita;
 
-    @OneToMany(mappedBy = "prodotto", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "prodotto")
     @JsonIgnore
     private Set<Prodotti_Ordini> prodottiOrdini = new HashSet<>();
 
@@ -56,5 +58,16 @@ public class Prodotto {
     @Override
     public int hashCode() {
         return Objects.hash(id_prodotto);
+    }
+
+    public void setCategoriaProdotti(List<Categoria> categorie) {
+        Set<CategoriaProdotti> nuoveCategorie = new HashSet<>();
+        for (Categoria categoria : categorie) {
+            CategoriaProdotti categoriaProdotto = new CategoriaProdotti();
+            categoriaProdotto.setProdotto(this);
+            categoriaProdotto.setCategoria(categoria);
+            nuoveCategorie.add(categoriaProdotto);
+        }
+        this.categoriaProdotti = nuoveCategorie;
     }
 }

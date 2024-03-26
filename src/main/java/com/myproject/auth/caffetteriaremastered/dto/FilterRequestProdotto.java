@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class FilterRequestProdotto {
     private String type;
-    private String categoria;
+    private Long categoriaId;
     private String initial;
     private String sortBy;
     private String sortOrder;

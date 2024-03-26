@@ -13,10 +13,7 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +29,11 @@ public class ProdottoServiceImpl implements ProdottoService {
     private CategoriaProdottoRepository categoriaProdottoRepository;
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Override
+    public List<Categoria> getAllCategorie() {
+        return categoriaRepository.findAll();
+    }
 
     @Override
     @Transactional
@@ -140,9 +142,9 @@ public class ProdottoServiceImpl implements ProdottoService {
     }
 
     @Override
-    public Page<Prodotto> getProdottoByCategoria(String categoria, int page, int size) {
+    public Page<Prodotto> getProdottoByCategoria(Long idCategoria, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return prodottoRepository.findByCategoria(categoria, pageable);
+        return prodottoRepository.findByCategoriaId(idCategoria, pageable);
     }
 
     @Override
@@ -157,18 +159,18 @@ public class ProdottoServiceImpl implements ProdottoService {
         Specification<Prodotto> spec = Specification.where(null);
 
         if (filters.containsKey("categoria")) {
-            String categoria = (String) filters.get("categoria");
+            Long categoriaId = (Long) filters.get("categoria");
             spec = spec.and((root, query, cb) -> {
                 Join<Prodotto, CategoriaProdotti> joinCategoriaProdotti = root.join("categoriaProdotti", JoinType.INNER);
                 Join<CategoriaProdotti, Categoria> joinCategoria = joinCategoriaProdotti.join("categoria", JoinType.INNER);
-                return cb.equal(joinCategoria.get("nome"), categoria);
+                return cb.equal(joinCategoria.get("id_categoria"), categoriaId);
             });
         }
         if (filters.containsKey("initial")) {
             String initial = (String) filters.get("initial");
             spec = spec.and((root, query, cb) -> {
                 Expression<String> nomeExpression = root.get("nome_prodotto");
-                return cb.like(nomeExpression, initial + "%");
+                return cb.like(nomeExpression, "%" + initial + "%");
             });
         }
 
@@ -199,9 +201,14 @@ public class ProdottoServiceImpl implements ProdottoService {
             return prodottoRepository.findAll(spec, pageable);
         }
 
-        Pageable pageable = PageRequest.of(page, size);
-        return prodottoRepository.findAll(spec, pageable);
+        Page<Prodotto> filteredResults = prodottoRepository.findAll(spec, PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
 
+        filteredResults.getContent().forEach(prodotto -> {
+            List<Categoria> categorie = categoriaRepository.findCategorieByProdottoId(prodotto.getId_prodotto());
+            prodotto.setCategoriaProdotti(categorie);
+        });
+
+        return filteredResults;
     }
 
     private Specification<Prodotto> hasPrezzoIngrosso(Double prezzoIngrosso) {

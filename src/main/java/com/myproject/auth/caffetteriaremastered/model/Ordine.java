@@ -2,6 +2,7 @@ package com.myproject.auth.caffetteriaremastered.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,12 +14,14 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "ordine")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Ordine {
 
     @Id
@@ -37,11 +40,11 @@ public class Ordine {
     @JsonBackReference
     private Utente utente;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", referencedColumnName = "id_cliente")
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "ordine", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "ordine")
     @JsonIgnore
     private Set<Prodotti_Ordini> prodottiOrdini = new HashSet<>();
 

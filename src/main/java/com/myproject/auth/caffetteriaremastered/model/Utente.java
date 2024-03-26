@@ -1,5 +1,8 @@
 package com.myproject.auth.caffetteriaremastered.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.myproject.auth.caffetteriaremastered.userRole.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,11 +23,13 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "utente")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Utente implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id_utente")
+    @JsonProperty("id")
     private Long id_utente;
     @Column(name = "username")
     private String username;
@@ -32,7 +37,8 @@ public class Utente implements UserDetails {
     @Enumerated(EnumType.STRING)
     private UserRole ruolo;
 
-    @OneToMany(mappedBy = "utente")
+    @OneToMany(mappedBy = "utente", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Ordine> ordine = new HashSet<>();
 
     @Override

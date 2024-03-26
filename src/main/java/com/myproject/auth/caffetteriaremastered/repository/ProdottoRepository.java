@@ -12,12 +12,16 @@ import java.util.Optional;
 
 @Repository
 public interface ProdottoRepository extends JpaRepository<Prodotto, Long> {
-    @Query("SELECT DISTINCT p FROM Prodotto p JOIN p.categoriaProdotti cp JOIN cp.categoria c WHERE c.nome = :categoria")
-    Page<Prodotto> findByCategoria(@Param("categoria") String categoria, Pageable pageable);
-    @Query("SELECT p FROM Prodotto p WHERE p.nome_prodotto LIKE :initial%")
+    @Query("SELECT DISTINCT p FROM Prodotto p JOIN p.categoriaProdotti cp JOIN cp.categoria c WHERE c.id = :categoriaId")
+    Page<Prodotto> findByCategoriaId(@Param("categoriaId") Long categoriaId, Pageable pageable);
+    @Query("SELECT p FROM Prodotto p WHERE p.nome_prodotto LIKE %:initial%")
     Page<Prodotto> findByInitial(@Param("initial") String initial, Pageable pageable);
 
     Page<Prodotto> findAll(Specification<Prodotto> spec, Pageable pageable);
 
     Optional<Prodotto> findById(Long id);
+
+    @Query("SELECT p FROM Prodotto p JOIN FETCH p.categoriaProdotti WHERE :spec IS NULL OR :spec = NULL")
+    Page<Prodotto> findAllWithCategorie(@Param("spec") Specification<Prodotto> spec, Pageable pageable);
+
 }

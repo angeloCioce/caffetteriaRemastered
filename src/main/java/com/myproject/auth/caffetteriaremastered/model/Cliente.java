@@ -1,6 +1,8 @@
 package com.myproject.auth.caffetteriaremastered.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.myproject.auth.caffetteriaremastered.userRole.UtenteGenere;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "cliente")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Cliente {
 
     @Id
@@ -36,6 +39,7 @@ public class Cliente {
     @Enumerated(EnumType.STRING)
     private UtenteGenere genere;
 
-    @OneToMany(mappedBy = "cliente")
+    @OneToMany(mappedBy = "cliente", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Ordine> ordine = new HashSet<>();
 }

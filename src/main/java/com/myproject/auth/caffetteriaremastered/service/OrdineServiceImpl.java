@@ -3,12 +3,15 @@ package com.myproject.auth.caffetteriaremastered.service;
 import com.myproject.auth.caffetteriaremastered.dto.*;
 import com.myproject.auth.caffetteriaremastered.model.*;
 import com.myproject.auth.caffetteriaremastered.repository.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Subquery;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +34,8 @@ public class OrdineServiceImpl implements OrdineService{
     private ProdottoRepository prodottoRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
     @Override
@@ -187,55 +192,6 @@ public class OrdineServiceImpl implements OrdineService{
         return ordineDto;
     }
 
-    @Override
-    public Page<Ordine> applyFilters(Map<String, Object> filters, int page, int size, String sortBy, String sortOrder) {
-        Specification<Ordine> spec = Specification.where(null);
-
-        if (filters.containsKey("dataOrdine")) {
-            String dataOrdineFilter = (String) filters.get("dataOrdine");
-           LocalDateTime dataOrdine = LocalDateTime.parse((dataOrdineFilter));
-           spec =  spec.and(hasDataOrdine(dataOrdine));
-        }
-
-        if (filters.containsKey("prezzoTotale")) {
-            String prezzoTotaleFilters = (String) filters.get("prezzoTotale");
-            Double prezzoTotale = Double.parseDouble(prezzoTotaleFilters);
-            spec =  spec.and(hasPrezzoTotale(prezzoTotale));
-        }
-
-        if (filters.containsKey("quantitaOrdine")) {
-            String quantitaOrdineFilters = (String) filters.get("quantitaOrdine");
-            Integer quantitaOrdine = Integer.parseInt(quantitaOrdineFilters);
-            spec =  spec.and(hasQuantitaOrdine(quantitaOrdine));
-        }
-
-
-        sortBy = (String) filters.get("sortBy");
-        sortOrder = (String) filters.get("sortOrder");
-
-        if (sortBy != null && sortOrder != null) {
-            Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-            Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-            return ordineRepository.findAll(spec, pageable);
-        }
-
-        Pageable pageable = PageRequest.of(page, size);
-        return ordineRepository.findAll(spec, pageable);
-    }
-
-
-
-    private Specification<Ordine> hasDataOrdine(LocalDateTime dataOrdine) {
-        return (root, query, cb) -> cb.equal(root.get("dataOrdine"), dataOrdine);
-    }
-
-    private Specification<Ordine> hasPrezzoTotale(Double prezzoTotale) {
-        return (root, query, cb) -> cb.equal(root.get("prezzoTotale"), prezzoTotale);
-    }
-
-    private Specification<Ordine> hasQuantitaOrdine(Integer quantitaOrdine) {
-        return (root, query, cb) -> cb.equal(root.get("quantitaOrdine"), quantitaOrdine);
-    }
 
     public List<ProdottoPercentualeVendite> calcolaPercentualeProdottiPiuVenduti(Long idOrdine) {
         List<Prodotti_Ordini> prodottiOrdini = prodottoOrdiniRepository.findByOrdineId(idOrdine);
@@ -383,5 +339,96 @@ public class OrdineServiceImpl implements OrdineService{
         return utentiPercentualeVendite;
     }
 
+    @Override
+    public Page<?> applyFilters(Map<String, Object> filters, int page, int size, String sortBy, String sortOrder) {
+        Specification<Ordine> spec = Specification.where(null);
+        Pageable pageable = PageRequest.of(page, size);
 
+        Long idProdotto = (Long) filters.get("idProdotto");
+        if (idProdotto != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Ordine, Prodotti_Ordini> prodottiOrdiniJoin = root.join("prodottiOrdini");
+                return cb.equal(prodottiOrdiniJoin.get("prodotto").get("id"), idProdotto);
+            });
+        }
+
+        Long idCliente = (Long) filters.get("idCliente");
+        if (idCliente != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Ordine, Cliente> clienteJoin = root.join("cliente");
+                return cb.equal(clienteJoin.get("id"), idCliente);
+            });
+        }
+
+        Long idUtente = (Long) filters.get("idUtente");
+        if (idUtente != null) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Ordine, Utente> utenteJoin = root.join("utente");
+                return cb.equal(utenteJoin.get("id"), idUtente);
+            });
+        }
+
+        if (filters.containsKey("year")) {
+            Integer year = (Integer) filters.get("year");
+            spec = spec.and((root, query, cb) -> {
+                Expression<Integer> yearExpression = cb.function("YEAR", Integer.class, root.get("dataOrdine"));
+                return cb.equal(yearExpression, year);
+            });
+        }
+
+        if (sortBy != null && sortOrder != null && sortBy.equals("quantitaOrdine")) {
+            String jpqlQuery = "SELECT o FROM Ordine o JOIN o.prodottiOrdini po WHERE 1 = 1 ";
+
+            if (filters.containsKey("idCliente")) {
+                jpqlQuery += "AND o.cliente.id = :idCliente ";
+            }
+
+            if (filters.containsKey("year")) {
+                jpqlQuery += "AND FUNCTION('YEAR', o.dataOrdine) = :year ";
+            }
+
+            if (filters.containsKey("idProdotto")) {
+                jpqlQuery += "AND po.prodotto.id = :idProdotto ";
+            }
+
+            if (filters.containsKey("idUtente")) {
+                jpqlQuery += "AND o.utente.id = :idUtente ";
+            }
+
+            jpqlQuery += "GROUP BY o.id ORDER BY SUM(po.quantitaOrdine) " + sortOrder;
+
+            TypedQuery<Ordine> query = entityManager.createQuery(jpqlQuery, Ordine.class);
+
+            if (filters.containsKey("idCliente")) {
+                query.setParameter("idCliente", filters.get("idCliente"));
+            }
+
+            if (filters.containsKey("year")) {
+                query.setParameter("year", filters.get("year"));
+            }
+
+            if (filters.containsKey("idProdotto")) {
+                query.setParameter("idProdotto", filters.get("idProdotto"));
+            }
+
+            if (filters.containsKey("idUtente")) {
+                query.setParameter("idUtente", filters.get("idUtente"));
+            }
+
+            query.setFirstResult(page * size)
+                    .setMaxResults(size);
+
+            List<Ordine> result = query.getResultList();
+
+            long total = (long) entityManager.createQuery("SELECT COUNT(DISTINCT o.id) FROM Ordine o WHERE 1 = 1 ")
+                    .getSingleResult();
+
+            return new PageImpl<>(result, pageable, total);
+        } else {
+
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+            pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+            return ordineRepository.findAll(spec, pageable);
+        }
+    }
 }

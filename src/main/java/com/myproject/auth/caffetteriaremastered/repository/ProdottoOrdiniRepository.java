@@ -2,6 +2,10 @@ package com.myproject.auth.caffetteriaremastered.repository;
 
 import com.myproject.auth.caffetteriaremastered.model.Ordine;
 import com.myproject.auth.caffetteriaremastered.model.Prodotti_Ordini;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +27,6 @@ public interface ProdottoOrdiniRepository extends JpaRepository<Prodotti_Ordini,
 
     @Query("SELECT po FROM Prodotti_Ordini po WHERE po.ordine.id_ordine = :idOrdine")
     List<Prodotti_Ordini> findByOrdineId(Long idOrdine);
+
+    Page<Prodotti_Ordini> findAll(Specification<Prodotti_Ordini> spec, Pageable pageable);
 }

@@ -1,9 +1,10 @@
 package com.myproject.auth.caffetteriaremastered.controller;
 
-import com.myproject.auth.caffetteriaremastered.dto.FilterRequestOrdine;
+import com.myproject.auth.caffetteriaremastered.dto.FilterRequestOrdini;
 import com.myproject.auth.caffetteriaremastered.dto.OrdineDto;
 import com.myproject.auth.caffetteriaremastered.dto.OrdineUpdateRequest;
 import com.myproject.auth.caffetteriaremastered.model.Ordine;
+import com.myproject.auth.caffetteriaremastered.model.Prodotti_Ordini;
 import com.myproject.auth.caffetteriaremastered.service.OrdineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -57,41 +58,39 @@ public class OrdineController {
 
         return ResponseEntity.ok().body(ordineAggiornato);
     }
-
     @PreAuthorize("hasAnyAuthority('ADMIN', 'DIPENDENTE', 'MANUTENTORE')")
     @PostMapping("/ordini/filtri.dinamici")
-    public ResponseEntity<?> filterOrdiniDinamici(@Validated @RequestBody FilterRequestOrdine filterRequestOrdine)
-    {
-        Map<String, Object> filters =new HashMap<>();
+    public ResponseEntity<?> filterOrdiniDinamic(@Validated @RequestBody FilterRequestOrdini filterRequest) {
+        Map<String, Object> filters = new HashMap<>();
 
-        if(filterRequestOrdine.getDataOrdine() !=null)
-        {
-            filters.put("dataOrdine", filterRequestOrdine.getDataOrdine());
+        if (filterRequest.getIdCliente() != null) {
+            filters.put("idCliente", filterRequest.getIdCliente());
         }
 
-        if(filterRequestOrdine.getPrezzoTotale() !=null)
-        {
-            filters.put("prezzoTotale", filterRequestOrdine.getPrezzoTotale());
+        if (filterRequest.getIdUtente() != null) {
+            filters.put("idUtente", filterRequest.getIdUtente());
         }
 
-        if(filterRequestOrdine.getQuantitaOrdine() != null)
-        {
-            filters.put("quantitaOrdine", filterRequestOrdine.getQuantitaOrdine());
+        if (filterRequest.getYear() != null) {
+            filters.put("year", filterRequest.getYear());
         }
 
+        if (filterRequest.getIdProdotto() != null) {
+            filters.put("idProdotto", filterRequest.getIdProdotto());
+        }
 
-        String sortBy = filterRequestOrdine.getSortBy();
-        String sortOrder = filterRequestOrdine.getSortOrder();
+        String sortBy = filterRequest.getSortBy();
+        String sortOrder = filterRequest.getSortOrder();
 
         if (sortBy != null && sortOrder != null) {
             filters.put("sortBy", sortBy);
             filters.put("sortOrder", sortOrder);
         }
 
-        int page = filterRequestOrdine.getPage();
-        int size = filterRequestOrdine.getSize();
+        int page = filterRequest.getPage();
+        int size = filterRequest.getSize();
 
-        Page<Ordine> filteredResults= ordineService.applyFilters(filters,page, size, sortBy, sortOrder);
+        Page<OrdineDto> filteredResults = (Page<OrdineDto>) ordineService.applyFilters(filters, page, size, sortBy, sortOrder);
         return new ResponseEntity<>(filteredResults, HttpStatus.OK);
     }
 }

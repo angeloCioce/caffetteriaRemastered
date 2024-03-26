@@ -1,6 +1,7 @@
 package com.myproject.auth.caffetteriaremastered.controller;
 
 import com.myproject.auth.caffetteriaremastered.dto.*;
+import com.myproject.auth.caffetteriaremastered.model.Categoria;
 import com.myproject.auth.caffetteriaremastered.model.Prodotto;
 import com.myproject.auth.caffetteriaremastered.service.ProdottoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,6 +21,11 @@ public class ProdottoController {
 
     @Autowired
     private ProdottoService prodottoService;
+
+    @GetMapping("/categorie")
+    public List<Categoria> getAllCategorie() {
+        return prodottoService.getAllCategorie();
+    }
 
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANUTENTORE', 'DIPENDENTE')")
     @PostMapping("/addProdotto")
@@ -38,10 +45,10 @@ public class ProdottoController {
 
     @GetMapping("/byCategoria")
     public ResponseEntity<Page<Prodotto>> getProdottoByCategoria(
-            @RequestParam("categoria") String categoria,
+            @RequestParam("categoria") Long categoriaId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Page<Prodotto> prodotti = prodottoService.getProdottoByCategoria(categoria, page, size);
+        Page<Prodotto> prodotti = prodottoService.getProdottoByCategoria(categoriaId, page, size);
         return new ResponseEntity<>(prodotti, HttpStatus.OK);
     }
 
@@ -59,8 +66,8 @@ public class ProdottoController {
     public ResponseEntity<?> filterProdottiDinamici(@Validated @RequestBody FilterRequestProdotto filterRequest) {
         Map<String, Object> filters = new HashMap<>();
 
-        if (filterRequest.getCategoria() != null) {
-            filters.put("categoria", filterRequest.getCategoria());
+        if (filterRequest.getCategoriaId() != null) {
+            filters.put("categoria", filterRequest.getCategoriaId());
         }
 
         if (filterRequest.getInitial() != null) {
@@ -91,6 +98,7 @@ public class ProdottoController {
         int size = filterRequest.getSize();
 
         Page<Prodotto> filteredResults = prodottoService.applyFilters(filters, page, size, sortBy, sortOrder);
+
         return new ResponseEntity<>(filteredResults, HttpStatus.OK);
     }
 
