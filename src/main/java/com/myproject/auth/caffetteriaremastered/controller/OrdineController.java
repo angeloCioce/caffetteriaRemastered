@@ -4,7 +4,6 @@ import com.myproject.auth.caffetteriaremastered.dto.FilterRequestOrdini;
 import com.myproject.auth.caffetteriaremastered.dto.OrdineDto;
 import com.myproject.auth.caffetteriaremastered.dto.OrdineUpdateRequest;
 import com.myproject.auth.caffetteriaremastered.model.Ordine;
-import com.myproject.auth.caffetteriaremastered.model.Prodotti_Ordini;
 import com.myproject.auth.caffetteriaremastered.service.OrdineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,7 +35,7 @@ public class OrdineController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'MANUTENTORE', 'DIPENDENTE')")
     @PostMapping("/addOrdine")
     public ResponseEntity<OrdineDto> saveNewOrdine(@RequestBody OrdineDto ordineDto) {
-        Ordine ordine = ordineService.save(ordineDto);
+        ordineService.save(ordineDto);
         return new ResponseEntity<>(ordineDto, HttpStatus.CREATED);
     }
 
@@ -60,7 +59,7 @@ public class OrdineController {
     }
     @PreAuthorize("hasAnyAuthority('ADMIN', 'DIPENDENTE', 'MANUTENTORE')")
     @PostMapping("/ordini/filtri.dinamici")
-    public ResponseEntity<?> filterOrdiniDinamic(@Validated @RequestBody FilterRequestOrdini filterRequest) {
+    public ResponseEntity<?> filterOrdiniDinamici(@Validated @RequestBody FilterRequestOrdini filterRequest) {
         Map<String, Object> filters = new HashMap<>();
 
         if (filterRequest.getIdCliente() != null) {

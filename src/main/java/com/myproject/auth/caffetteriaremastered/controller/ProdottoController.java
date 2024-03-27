@@ -21,7 +21,7 @@ public class ProdottoController {
 
     @Autowired
     private ProdottoService prodottoService;
-
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'MANUTENTORE', 'DIPENDENTE')")
     @GetMapping("/categorie")
     public List<Categoria> getAllCategorie() {
         return prodottoService.getAllCategorie();
@@ -31,7 +31,7 @@ public class ProdottoController {
     @PostMapping("/addProdotto")
     public ResponseEntity<ProdottoDto> saveNewProdotto(@RequestBody ProdottoDto prodottoDto)
     {
-        Prodotto prodotto = prodottoService.save(prodottoDto);
+        prodottoService.save(prodottoDto);
         return new ResponseEntity<>(prodottoDto, HttpStatus.CREATED);
     }
 

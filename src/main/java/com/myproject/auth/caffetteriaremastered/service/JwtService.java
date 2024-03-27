@@ -79,11 +79,6 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-
-//    public void addToBlacklist(String token) {
-//        tokenBlacklistService.addToBlacklist(token);
-//    }
-
     public boolean isTokenBlacklisted(String token) {
         return tokenBlacklistService.isTokenBlacklisted(token);
     }

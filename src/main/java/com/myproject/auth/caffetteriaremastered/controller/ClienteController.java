@@ -30,7 +30,7 @@ public class ClienteController {
     @PostMapping("/addCliente")
     public ResponseEntity<ClienteDto> saveNewCliente(@RequestBody ClienteDto clienteDto)
     {
-        Cliente cliente =  clienteService.save(clienteDto);
+        clienteService.save(clienteDto);
         return new ResponseEntity<>(clienteDto, HttpStatus.CREATED);
     }
 

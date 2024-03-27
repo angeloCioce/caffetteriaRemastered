@@ -12,6 +12,7 @@ public class ProdottoDto {
     private Double prezzoIngrosso;
     private Double prezzoDettaglio;
     private Integer quantita;
+    private Integer quantitaOrdine;
     private List<Long> id_categoria;
     private List<CategoriaDto> categoria;
     private List<String> categorie;

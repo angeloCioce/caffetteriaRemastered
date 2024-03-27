@@ -1,5 +1,6 @@
 package com.myproject.auth.caffetteriaremastered.service;
 
+import com.myproject.auth.caffetteriaremastered.config.ProdottoMapper;
 import com.myproject.auth.caffetteriaremastered.dto.*;
 import com.myproject.auth.caffetteriaremastered.model.*;
 import com.myproject.auth.caffetteriaremastered.repository.*;
@@ -8,8 +9,9 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Subquery;
+import jakarta.persistence.criteria.JoinType;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -423,12 +425,53 @@ public class OrdineServiceImpl implements OrdineService{
             long total = (long) entityManager.createQuery("SELECT COUNT(DISTINCT o.id) FROM Ordine o WHERE 1 = 1 ")
                     .getSingleResult();
 
-            return new PageImpl<>(result, pageable, total);
+            return new PageImpl<>(result.stream().map(this::mapToOrdineDto).collect(Collectors.toList()), pageable, total);
         } else {
 
             Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
             pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-            return ordineRepository.findAll(spec, pageable);
+            spec = spec.and((root, query, cb) -> {
+                root.fetch("utente", JoinType.LEFT); // Carica le informazioni sull'utente
+                root.fetch("prodottiOrdini", JoinType.LEFT).fetch("prodotto", JoinType.LEFT); // Carica le informazioni sui prodotti
+                return null;
+            });
+
+            return ordineRepository.findAll(spec, pageable).map(this::mapToOrdineDto);
         }
+    }
+
+    private OrdineDto mapToOrdineDto(Ordine ordine) {
+        OrdineDto ordineDto = new OrdineDto();
+        BeanUtils.copyProperties(ordine, ordineDto);
+
+        ordineDto.setId(ordine.getId_ordine());
+        ordineDto.setId_cliente(ordine.getCliente().getId());
+        ordineDto.setId_utente(ordine.getUtente().getId_utente());
+        ordineDto.setUsername_utente(ordine.getUtente().getUsername());
+        ordineDto.setNome_cliente(ordine.getCliente().getNome());
+        ordineDto.setCognome_cliente(ordine.getCliente().getCognome());
+        if (ordine.getProdottiOrdini() != null && !ordine.getProdottiOrdini().isEmpty()) {
+            List<ProdottoDto> prodottiDto = ordine.getProdottiOrdini().stream()
+                    .map(prodottiOrdini -> {
+                        ProdottoDto prodottoDto = ProdottoMapper.mapToProdottoDto(prodottiOrdini.getProdotto());
+                        prodottoDto.setQuantitaOrdine(prodottiOrdini.getQuantitaOrdine());
+
+                        List<CategoriaDto> categoria = prodottiOrdini.getProdotto().getCategoriaProdotti().stream()
+                                .map(categoriaProdotto -> {
+                                    CategoriaDto categoriaDto = new CategoriaDto();
+                                    categoriaDto.setId(categoriaProdotto.getCategoria().getId());
+                                    categoriaDto.setNome(categoriaProdotto.getCategoria().getNome());
+                                    return categoriaDto;
+                                })
+                                .collect(Collectors.toList());
+
+                        prodottoDto.setCategoria(categoria);
+                        return prodottoDto;
+                    })
+                    .collect(Collectors.toList());
+            ordineDto.setProdotti(prodottiDto);
+        }
+
+        return ordineDto;
     }
 }
