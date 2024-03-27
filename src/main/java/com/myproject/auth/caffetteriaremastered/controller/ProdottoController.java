@@ -86,6 +86,7 @@ public class ProdottoController {
             filters.put("quantita", filterRequest.getQuantita());
         }
 
+
         String sortBy = filterRequest.getSortBy();
         String sortOrder = filterRequest.getSortOrder();
 

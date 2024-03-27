@@ -9,9 +9,7 @@ import com.myproject.auth.caffetteriaremastered.model.Prodotto;
 import com.myproject.auth.caffetteriaremastered.repository.CategoriaProdottoRepository;
 import com.myproject.auth.caffetteriaremastered.repository.CategoriaRepository;
 import com.myproject.auth.caffetteriaremastered.repository.ProdottoRepository;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -158,14 +156,11 @@ public class ProdottoServiceImpl implements ProdottoService {
 
         Specification<Prodotto> spec = Specification.where(null);
 
-        if (filters.containsKey("categoria")) {
-            Long categoriaId = (Long) filters.get("categoria");
-            spec = spec.and((root, query, cb) -> {
-                Join<Prodotto, CategoriaProdotti> joinCategoriaProdotti = root.join("categoriaProdotti", JoinType.INNER);
-                Join<CategoriaProdotti, Categoria> joinCategoria = joinCategoriaProdotti.join("categoria", JoinType.INNER);
-                return cb.equal(joinCategoria.get("id_categoria"), categoriaId);
-            });
+        Long categoriaId = (Long) filters.get("categoria");
+        if (categoriaId != null) {
+            return prodottoRepository.findByCategoriaId(categoriaId, PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
         }
+
         if (filters.containsKey("initial")) {
             String initial = (String) filters.get("initial");
             spec = spec.and((root, query, cb) -> {
@@ -202,11 +197,6 @@ public class ProdottoServiceImpl implements ProdottoService {
         }
 
         Page<Prodotto> filteredResults = prodottoRepository.findAll(spec, PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
-
-        filteredResults.getContent().forEach(prodotto -> {
-            List<Categoria> categorie = categoriaRepository.findCategorieByProdottoId(prodotto.getId_prodotto());
-            prodotto.setCategoriaProdotti(categorie);
-        });
 
         return filteredResults;
     }

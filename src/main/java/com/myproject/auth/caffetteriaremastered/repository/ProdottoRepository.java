@@ -20,8 +20,4 @@ public interface ProdottoRepository extends JpaRepository<Prodotto, Long> {
     Page<Prodotto> findAll(Specification<Prodotto> spec, Pageable pageable);
 
     Optional<Prodotto> findById(Long id);
-
-    @Query("SELECT p FROM Prodotto p JOIN FETCH p.categoriaProdotti WHERE :spec IS NULL OR :spec = NULL")
-    Page<Prodotto> findAllWithCategorie(@Param("spec") Specification<Prodotto> spec, Pageable pageable);
-
 }
